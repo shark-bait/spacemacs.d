@@ -30,15 +30,26 @@ This function should only modify configuration layer settings."
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
    '(
-     ruby
+     html
+     (javascript :variables javascript-disable-tern-port-files nil
+                            ;; tern-command '("node" "/path/to/tern/bin/tern") 
+                            )
+     (ruby :variables ruby-enable-enh-ruby-mode t)
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press `SPC f e R' (Vim style) or
      ;; `M-m f e R' (Emacs style) to install them.
      ;; ----------------------------------------------------------------
      ivy
-     chinese
-     auto-completion
+     (auto-completion :variables
+                      auto-completion-return-key-behavior nil
+                      auto-completion-tab-key-behavior 'complete
+                      auto-completion-complete-with-key-sequence nil
+                      auto-completion-complete-with-key-sequence-delay 0.1
+                      auto-completion-enable-snippets-in-popup t
+                      auto-completion-enable-sort-by-usage t
+                      auto-completion-private-snippets-directory nil)
+
      better-defaults
      emacs-lisp
      git
@@ -55,12 +66,15 @@ This function should only modify configuration layer settings."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '()
+   dotspacemacs-additional-packages '(
+                                      yafolding
+                                      auto-yasnippet
+                                      )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
    dotspacemacs-excluded-packages '(vi-tilde-fringe
-                                    )
+               )
    
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
@@ -351,6 +365,36 @@ configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
   (setq powerline-default-separator 'arrow)
+  (defun restart-app()
+    (interactive)
+    (with-current-buffer "*eshell*"
+      (kill-process nil 'ruby)
+      (insert "\n\n\n\n\n\n\n\n\n\n\n\n")
+      (run-with-timer 0.5 nil
+                      (lambda ()
+                        (with-current-buffer "*eshell*"
+                          (goto-char (point-max))
+                          (insert "ruby main.rb")
+                          (eshell-send-input))))))
+  (spacemacs/set-leader-keys "or" 'restart-app)
+  ;;(require 'multi-web-mode)
+  ;;(setq mweb-default-major-mode 'html-mode) 
+  ;; (setq mweb-tags '((pug-mode "<template lang=\"pug\"[^>]*>" "</template>")
+  ;;                   (html-mode "<template>" "</template>")
+  ;;                   (js-mode "<script +\\(type=\"text/javascript\"\\|language=\"javascript\"\\)[^>]*>" "</script>")
+  ;;                   (js2-mode "<script>" "</script>")
+  ;;                   (css-mode "<style scoped>" "</style>")
+  ;;                   (css-mode "<style +type=\"text/css\"[^>]*>" "</style>")))
+  ;; (setq mweb-filename-extensions '("vue" "htm" "html" "ctp" "phtml" "php4" "php5")) ;
+  ;; (multi-web-global-mode 1)
+  (rvm-use-default)
+  (global-set-key [(s return)] 'set-mark-command)
+  (add-hook 'after-init-hook
+            (lambda () (yafolding-mode)))
+  (yafolding-mode 1)
+  (golden-ratio-mode t)
+  (global-set-key (kbd "<C-return>") 'yafolding-toggle-element)
+  (global-company-mode)
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
@@ -371,6 +415,10 @@ This function is called at the very end of Spacemacs initialization."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+  '(company-tooltip-common
+    ((t (:inherit company-tooltip :weight bold :underline nil))))
+  '(company-tooltip-common-selection
+    ((t (:inherit company-tooltip-selection :weight bold :underline nil))))
  )
 )
 (custom-set-variables
@@ -378,10 +426,17 @@ This function is called at the very end of Spacemacs initialization."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   (quote
+    ("bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" default)))
+ '(evil-want-Y-yank-to-eol nil)
+ '(js-indent-level 2)
  '(ns-use-srgb-colorspace nil)
  '(package-selected-packages
    (quote
-    (pangu-spacing find-by-pinyin-dired chinese-pyim chinese-pyim-basedict ace-pinyin pinyinlib rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby youdao-dictionary names chinese-word-at-point helm-themes helm-swoop helm-projectile helm-mode-manager helm-gitignore helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag flyspell-correct-helm ace-jump-helm-line flyspell-correct-ivy flyspell-correct flycheck-pos-tip pos-tip flycheck auto-dictionary smeargle orgit magit-gitflow gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link evil-magit magit magit-popup git-commit with-editor ws-butler winum which-key wgrep volatile-highlights vi-tilde-fringe uuidgen use-package unfill toc-org spaceline smex restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox org-projectile org-present org-pomodoro org-download org-bullets open-junk-file neotree mwim move-text macrostep lorem-ipsum linum-relative link-hint ivy-hydra info+ indent-guide hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-make google-translate golden-ratio gnuplot fuzzy flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump define-word counsel-projectile company-statistics column-enforce-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ac-ispell))))
+    (floobits powerline spinner org-category-capture alert log4e gntp org-plus-contrib hydra parent-mode helm helm-core flx smartparens iedit anzu evil goto-chg undo-tree highlight f diminish projectile pkg-info epl counsel swiper ivy s company pyim pyim-basedict bind-map bind-key yasnippet packed dash async avy auto-complete popup enh-ruby-mode yafolding tagedit slim-mode scss-mode sass-mode less-css-mode haml-mode emmet-mode company-web web-completion-data web-beautify livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js-doc company-tern dash-functional tern coffee-mode pug-mode multi-web-mode js2-mode web-mode pangu-spacing find-by-pinyin-dired chinese-pyim chinese-pyim-basedict ace-pinyin pinyinlib rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby youdao-dictionary names chinese-word-at-point helm-themes helm-swoop helm-projectile helm-mode-manager helm-gitignore helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag flyspell-correct-helm ace-jump-helm-line flyspell-correct-ivy flyspell-correct flycheck-pos-tip pos-tip flycheck auto-dictionary smeargle orgit magit-gitflow gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link evil-magit magit magit-popup git-commit with-editor ws-butler winum which-key wgrep volatile-highlights vi-tilde-fringe uuidgen use-package unfill toc-org spaceline smex restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox org-projectile org-present org-pomodoro org-download org-bullets open-junk-file neotree mwim move-text macrostep lorem-ipsum linum-relative link-hint ivy-hydra info+ indent-guide hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-make google-translate golden-ratio gnuplot fuzzy flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump define-word counsel-projectile company-statistics column-enforce-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ac-ispell)))
+ '(send-mail-function (quote mailclient-send-it))
+ '(web-mode-code-indent-offset 2))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
